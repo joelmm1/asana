@@ -1,0 +1,6 @@
+Task,Parent,Assignee,Assignee Email,Start Date,Due Date,Dependencies,Notes
+[Project Name],,Joel Muriuki,joel.muriuki@angama.com,YYYY-MM-DD,YYYY-MM-DD,,"[Project Description and Objectives]"
+Phase 1: [Phase Name],[Project Name],Joel Muriuki,joel.muriuki@angama.com,YYYY-MM-DD,YYYY-MM-DD,,"[Phase Description and Goals]"
+[Task Name],Phase 1: [Phase Name],,,YYYY-MM-DD,YYYY-MM-DD,,"[Task Description and Details]"
+Phase 2: [Phase Name],[Project Name],Joel Muriuki,joel.muriuki@angama.com,YYYY-MM-DD,YYYY-MM-DD,Phase 1: [Phase Name],"[Phase Description and Goals]"
+[Task Name],Phase 2: [Phase Name],,,YYYY-MM-DD,YYYY-MM-DD,,"[Task Description and Details]"

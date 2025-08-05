@@ -44,42 +44,80 @@ else
     echo "✅ All tasks have names"
 fi
 
-# Check date format (YYYY-MM-DD)
-INVALID_DATES=$(awk -F',' 'NR>1 && ($5!="" && $5!~/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) || ($6!="" && $6!~/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/) {print NR}' "$CSV_FILE")
-if [ -n "$INVALID_DATES" ]; then
-    echo "❌ Invalid date format found on rows: $INVALID_DATES"
-    echo "   Expected format: YYYY-MM-DD"
-else
-    echo "✅ All dates in correct format"
-fi
+# Check date format (YYYY-MM-DD) - using Python for better CSV parsing
+python3 << EOF
+import csv
+import re
+import sys
 
-# Check for weekend dates (Saturday=6, Sunday=0)
-WEEKEND_DATES=$(awk -F',' '
-NR>1 {
-    if ($5 != "") {
-        cmd = "date -d " $5 " +%w"
-        cmd | getline day_of_week
-        close(cmd)
-        if (day_of_week == 0 || day_of_week == 6) {
-            print "Row " NR ": Start Date " $5 " is weekend"
-        }
-    }
-    if ($6 != "") {
-        cmd = "date -d " $6 " +%w"
-        cmd | getline day_of_week
-        close(cmd)
-        if (day_of_week == 0 || day_of_week == 6) {
-            print "Row " NR ": Due Date " $6 " is weekend"
-        }
-    }
-}' "$CSV_FILE")
+date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
+invalid_dates = []
 
-if [ -n "$WEEKEND_DATES" ]; then
-    echo "⚠️  Weekend dates found:"
-    echo "$WEEKEND_DATES"
-else
-    echo "✅ No weekend dates found"
-fi
+try:
+    with open('$CSV_FILE', 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # skip header
+        for row_num, row in enumerate(reader, start=2):
+            if len(row) >= 6:
+                start_date = row[4].strip() if len(row) > 4 else ""
+                due_date = row[5].strip() if len(row) > 5 else ""
+                
+                if start_date and not date_pattern.match(start_date):
+                    invalid_dates.append(f"Row {row_num}: Start Date \"{start_date}\"")
+                if due_date and not date_pattern.match(due_date):
+                    invalid_dates.append(f"Row {row_num}: Due Date \"{due_date}\"")
+
+    if invalid_dates:
+        print("❌ Invalid date format found:")
+        for invalid in invalid_dates:
+            print(invalid)
+        print("   Expected format: YYYY-MM-DD")
+    else:
+        print("✅ All dates in correct format")
+except Exception as e:
+    print("❌ Error checking dates:", str(e))
+EOF
+
+# Check for weekend dates (Saturday=6, Sunday=0) - using Python
+python3 << EOF
+import csv
+import datetime
+import sys
+
+weekend_dates = []
+
+try:
+    with open('$CSV_FILE', 'r') as file:
+        reader = csv.reader(file)
+        next(reader)  # skip header
+        for row_num, row in enumerate(reader, start=2):
+            if len(row) >= 6:
+                start_date = row[4].strip() if len(row) > 4 else ""
+                due_date = row[5].strip() if len(row) > 5 else ""
+                
+                try:
+                    if start_date:
+                        date_obj = datetime.datetime.strptime(start_date, '%Y-%m-%d')
+                        if date_obj.weekday() in [5, 6]:  # Saturday=5, Sunday=6 in Python
+                            weekend_dates.append(f"Row {row_num}: Start Date {start_date} is weekend")
+                    
+                    if due_date:
+                        date_obj = datetime.datetime.strptime(due_date, '%Y-%m-%d')
+                        if date_obj.weekday() in [5, 6]:
+                            weekend_dates.append(f"Row {row_num}: Due Date {due_date} is weekend")
+                except ValueError:
+                    # Invalid date format, will be caught by previous check
+                    pass
+
+    if weekend_dates:
+        print("⚠️  Weekend dates found:")
+        for weekend in weekend_dates:
+            print(weekend)
+    else:
+        print("✅ No weekend dates found")
+except Exception as e:
+    print("❌ Error checking weekend dates:", str(e))
+EOF
 
 echo "=================================="
 echo "Validation complete!"

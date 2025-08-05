@@ -1,6 +1,43 @@
 # Quick Start Guide - Asana Project Management Repository
 
-## 🚀 Repository Setup Complete!
+## 🚀 **New Team Member Setup**
+
+### **Step 1: Clone Repository**
+```bash
+git clone git@github.com:joelmm1/asana.git
+cd asana
+```
+
+### **Step 2: Verify Setup**
+```bash
+# Check repository structure
+ls -la
+
+# Validate master CSV
+./scripts/validate-csv.sh master-projects.csv
+
+# Check git flow status
+./scripts/git-flow-helper.sh status
+```
+
+### **Step 3: Start Your First Feature**
+```bash
+# Create feature branch
+./scripts/git-flow-helper.sh feature my-first-project
+
+# Edit master-projects.csv (add your project)
+# Save and validate
+./scripts/validate-csv.sh master-projects.csv
+
+# Commit your work
+git add master-projects.csv
+git commit -m "Add new project: My First Project"
+
+# Finish feature (merges to develop)
+./scripts/git-flow-helper.sh finish my-first-project
+```
+
+## 🎯 **Repository Setup Complete!**
 
 ### **What's Been Created:**
 ✅ **Git Flow Repository** with proper branching strategy  
